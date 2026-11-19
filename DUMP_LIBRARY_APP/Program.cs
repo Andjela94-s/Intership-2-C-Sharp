@@ -62,7 +62,7 @@ void LibraryMembers()
         case "0":
             Console.WriteLine("Return to main menu...");
             Main();
-            break;
+            return;
         default:
             Console.WriteLine("Wrongly selected number!");
             break;
@@ -135,41 +135,44 @@ void ViewAllMembers()
 }
 void BorrowedBooks()
 {
-    Console.WriteLine("1-Borrow a book\n2-Return a book\n3-Delete a borrow\n4-Edit a borrow\n5-View borrowed books\n6-Data and analytics\n0-return to main menu");
-    var borrowedBooks = Console.ReadLine();
-    switch (borrowedBooks)
+    while (true)
     {
-        case "1":
-            Console.WriteLine("Borrowing a book...");
-            BorrowBook();
-            break;
-        case "2":
-            Console.WriteLine("Returning a book...");
-            ReturnBook();
-            break;
-        case "3":
-            Console.WriteLine("Deleting a borrow...");
-            DeleteBorrow();
-            break;
-        case "4":
-            Console.WriteLine("Editing a borrow...");
-            EditBorrow();
-            break;
-        case "5":
-            Console.WriteLine("Viewing borrowed books...");
-            ViewBorrowedBooks();
-            break;
-        case "6":
-            Console.WriteLine("Viewing data and analytics...");
-            ViewDataAndAnalytics();
-            break;
-        case "0":
-            Console.WriteLine("Return to main menu...");
-            Main();
-            break;
-        default:
-            Console.WriteLine("Wrongly selected number!");
-            break;
+        Console.WriteLine("1-Borrow a book\n2-Return a book\n3-Delete a borrow\n4-Edit a borrow\n5-View borrowed books\n6-Data and analytics\n0-return to main menu");
+        var borrowedBooks = Console.ReadLine();
+        switch (borrowedBooks)
+        {
+            case "1":
+                Console.WriteLine("Borrowing a book...");
+                BorrowBook();
+                break;
+            case "2":
+                Console.WriteLine("Returning a book...");
+                ReturnBook();
+                break;
+            case "3":
+                Console.WriteLine("Deleting a borrow...");
+                DeleteBorrow();
+                break;
+            case "4":
+                Console.WriteLine("Editing a borrow...");
+                EditBorrow();
+                break;
+            case "5":
+                Console.WriteLine("Viewing borrowed books...");
+                ViewBorrowedBooks();
+                break;
+            case "6":
+                Console.WriteLine("Viewing data and analytics...");
+                ViewDataAndAnalytics();
+                break;
+            case "0":
+                Console.WriteLine("Return to main menu...");
+                Main();
+                return;
+            default:
+                Console.WriteLine("Wrongly selected number!");
+                break;
+        }
     }
 }
 void BorrowBook()
@@ -314,38 +317,46 @@ void EditBorrow()
 }
 void ViewBorrowedBooks()
 {
+    while(true)
+    {
+        { }
     Console.WriteLine("1-All borrowed books\n2-Sorted books by loan date\n3-Sorted books by late days\n4-Currently borrowed books\n" +
         "5-Search by title or author\n6-Search by month");
     var choice = Console.ReadLine();
-    switch (choice)
-    {
-        case "1":
-            Console.WriteLine("Viewing all borrowed books...");
-            //ViewAllBorrowedBooks();
-            break;
-        case "2":
-            Console.WriteLine("Viewing sorted books by loan date...");
-            //ViewSortedByLoanDate();
-            break;
-        case "3":
-            Console.WriteLine("Viewing sorted books by late days...");
-            //ViewSortedByLateDays();
-            break;
-        case "4":
-            Console.WriteLine("Viewing currently borrowed books...");
-            //ViewCurrentlyBorrowedBooks();
-            break;
-        case "5":
-            Console.WriteLine("Searching by title or author...");
-            //SearchByTitleOrAuthor();
-            break;
-        case "6":
-            Console.WriteLine("Searching by month...");
-            //SearchByMonth();
-            break;
-        default:
-            Console.WriteLine("Wrongly selected number!");
-            break;
+        switch (choice)
+        {
+            case "1":
+                Console.WriteLine("Viewing all borrowed books...");
+                ViewAllBorrowedBooks();
+                break;
+            case "2":
+                Console.WriteLine("Viewing sorted books by loan date...");
+                ViewSortedByLoanDate();
+                break;
+            case "3":
+                Console.WriteLine("Viewing sorted books by late days...");
+                ViewSortedByLateDays();
+                break;
+            case "4":
+                Console.WriteLine("Viewing currently borrowed books...");
+                ViewCurrentlyBorrowedBooks();
+                break;
+            case "5":
+                Console.WriteLine("Searching by title or author...");
+                SearchByTitleOrAuthor();
+                break;
+            case "6":
+                Console.WriteLine("Searching by month...");
+                SearchByMonth();
+                break;
+                case "0":
+                Console.WriteLine("Return to main menu...");
+                Main();
+                return;
+            default:
+                Console.WriteLine("Wrongly selected number!");
+                break;
+        }
     }
 }
 void ViewDataAndAnalytics()
@@ -365,5 +376,94 @@ void ViewDataAndAnalytics()
     else
     {
         Console.WriteLine("Invalid member ID.");
+    }
+}
+void ViewAllBorrowedBooks()
+{
+    foreach(var kvp in Members)
+    {
+        var member = kvp.Value;
+        foreach (var loan in member.Loans)
+        {
+            Console.WriteLine($"{loan.BookId} \"{loan.Title}\" - {loan.Author} | Borrowed Date: {loan.BorrowedDate.ToShortDateString()}" +
+                $"| Returned Date: {(loan.DueDate.HasValue ? loan.DueDate.Value.ToShortDateString() : "Not Returned")}" +
+                $"| Total Late Days: {((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days : 0)}" +
+                $"| Late fee: ${((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days * LateFeePerDay : 0):F2}");
+        }
+    }
+}
+void ViewSortedByLoanDate()
+{
+    Console.WriteLine("Type 1 for ascending order, 2 for descending order:");
+    var choice = Console.ReadLine();
+    var sortedLoans = choice == "1" ? Members.Values.SelectMany(m => m.Loans).OrderBy(l => l.BorrowedDate)
+                                     : Members.Values.SelectMany(m => m.Loans).OrderByDescending(l => l.BorrowedDate);
+
+    foreach (var loan in sortedLoans)
+    {
+        Console.WriteLine($"{loan.BookId} \"{loan.Title}\" - {loan.Author} | Borrowed Date: {loan.BorrowedDate.ToShortDateString()}" +
+            $"| Returned Date: {(loan.DueDate.HasValue ? loan.DueDate.Value.ToShortDateString() : "Not Returned")}" +
+            $"| Total Late Days: {((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days : 0)}" +
+            $"| Late fee: ${((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days * LateFeePerDay : 0):F2}");
+    }
+}
+void ViewSortedByLateDays()
+{
+    Console.WriteLine("Type 1 for ascending order, 2 for descending order:");
+    var choice = Console.ReadLine();
+    var sortedLoans = choice == "1" ? Members.Values.SelectMany(m => m.Loans).OrderBy(l => (DateTime.Now - l.DueDate.GetValueOrDefault()).Days)
+                                     : Members.Values.SelectMany(m => m.Loans).OrderByDescending(l => (DateTime.Now - l.DueDate.GetValueOrDefault()).Days);
+    foreach (var loan in sortedLoans)
+    {
+        Console.WriteLine($"{loan.BookId} \"{loan.Title}\" - {loan.Author} | Borrowed Date: {loan.BorrowedDate.ToShortDateString()}" +
+            $"| Returned Date: {(loan.DueDate.HasValue ? loan.DueDate.Value.ToShortDateString() : "Not Returned")}" +
+            $"| Total Late Days: {((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days : 0)}" +
+            $"| Late fee: ${((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days * LateFeePerDay : 0):F2}");
+    }
+}
+void ViewCurrentlyBorrowedBooks()
+{
+    var currentlyBorrowed = Members.Values.SelectMany(m => m.Loans).Where(l => !l.DueDate.HasValue || l.DueDate.Value > DateTime.Now);
+    foreach (var loan in currentlyBorrowed)
+    {
+        Console.WriteLine($"{loan.BookId} \"{loan.Title}\" - {loan.Author} | Borrowed Date: {loan.BorrowedDate.ToShortDateString()}" +
+            $"| Due Date: {(loan.DueDate.HasValue ? loan.DueDate.Value.ToShortDateString() : "Not Set")}" +
+            $"| Total Late Days: {((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days : 0)}" +
+            $"| Late fee: ${((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days * LateFeePerDay : 0):F2}");
+    }
+}
+void SearchByTitleOrAuthor()
+{
+    Console.WriteLine("Enter title or author to search:");
+    var searchTerm = Console.ReadLine().ToLower();
+    var results = Members.Values.SelectMany(m => m.Loans)
+        .Where(l => l.Title.ToLower().Contains(searchTerm) || l.Author.ToLower().Contains(searchTerm));
+    foreach (var loan in results)
+    {
+        Console.WriteLine($"{loan.BookId} \"{loan.Title}\" - {loan.Author} | Borrowed Date: {loan.BorrowedDate.ToShortDateString()}" +
+            $"| Returned Date: {(loan.DueDate.HasValue ? loan.DueDate.Value.ToShortDateString() : "Not Returned")}" +
+            $"| Total Late Days: {((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days : 0)}" +
+            $"| Late fee: ${((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days * LateFeePerDay : 0):F2}");
+    }
+}
+void SearchByMonth()
+{
+    Console.WriteLine("Enter month (1-12) to search:");
+    var monthInput = Console.ReadLine();
+    if (int.TryParse(monthInput, out int month) && month >= 1 && month <= 12)
+    {
+        var results = Members.Values.SelectMany(m => m.Loans)
+            .Where(l => l.BorrowedDate.Month == month);
+        foreach (var loan in results)
+        {
+            Console.WriteLine($"{loan.BookId} \"{loan.Title}\" - {loan.Author} | Borrowed Date: {loan.BorrowedDate.ToShortDateString()}" +
+                $"| Returned Date: {(loan.DueDate.HasValue ? loan.DueDate.Value.ToShortDateString() : "Not Returned")}" +
+                $"| Total Late Days: {((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days : 0)}" +
+                $"| Late fee: ${((DateTime.Now - loan.DueDate.GetValueOrDefault()).Days > 0 ? (DateTime.Now - loan.DueDate.GetValueOrDefault()).Days * LateFeePerDay : 0):F2}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Invalid month.");
     }
 }
