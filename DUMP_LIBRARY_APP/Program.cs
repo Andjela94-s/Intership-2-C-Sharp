@@ -1,4 +1,7 @@
-﻿const int LoanDays = 21;
+﻿using System.Net.NetworkInformation;
+using System.Xml.Serialization;
+
+const int LoanDays = 21;
 const decimal LateFeePerDay = 0.5m;
 
 var Members = new Dictionary<int, (string FirstName, string LastName, DateTime DateOfBirth,
@@ -15,7 +18,7 @@ void Main()
     while (true)
     {
         Console.WriteLine("Library Management System\n");
-        Console.WriteLine("1-Members\t2-Borrowed books\t0-Exit the app");
+        Console.WriteLine("1-Members\t2-Borrowed books\t3-Statistics\t0-Exit the app");
         var menu = Console.ReadLine();
         switch (menu)
         {
@@ -26,6 +29,10 @@ void Main()
             case "2":
                 Console.WriteLine("Loading borrowed books...");
                 BorrowedBooks();
+                break;
+            case "3":
+                Console.WriteLine("Loading statistics...");
+                Statistics();
                 break;
             case "0":
                 Console.WriteLine("Leaving the app..");
@@ -87,41 +94,71 @@ void AddMembers()
 }
 void DeleteMembers()
 {
-    Console.WriteLine("Enter member ID to delete:");
-    var memberIdInput = Console.ReadLine();
-    if (int.TryParse(memberIdInput, out int memberId) && Members.ContainsKey(memberId))
+    Console.WriteLine("Are you sure you want to delete this member? Y/N");
+    char choice = Console.ReadLine()[0];
+    if (choice == 'Y' || choice == 'y')
     {
-        Members.Remove(memberId);
-        Console.WriteLine($"Member with ID {memberId} deleted successfully.");
+        Console.WriteLine("Enter member ID to delete:");
+        var memberIdInput = Console.ReadLine();
+        if (int.TryParse(memberIdInput, out int memberId) && Members.ContainsKey(memberId))
+        {
+            Members.Remove(memberId);
+            Console.WriteLine($"Member with ID {memberId} deleted successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Invalid member ID.");
+        }
+    }
+    else if(choice == 'N' || choice == 'n')
+    {
+        Console.WriteLine("Returning to previous menu...");
+        return;
     }
     else
     {
-        Console.WriteLine("Invalid member ID.");
+        Console.WriteLine("Wrong input!");
+        return;
     }
 }
 void EditMembers()
 {
-    Console.WriteLine("Enter member ID to edit:");
-    var memberIdInput = Console.ReadLine();
-    if (int.TryParse(memberIdInput, out int memberId) && Members.ContainsKey(memberId))
+    Console.WriteLine("Are you sure you want to edit a member? Y/N");
+    char choice = Console.ReadLine()[0];
+    if (choice == 'Y' || choice == 'y')
     {
-        var member = Members[memberId];
-        Console.WriteLine($"Editing member: {member.FirstName} {member.LastName}");
-        Console.WriteLine("Enter new first name (leave blank to keep current):");
-        var newFirstName = Console.ReadLine();
-        Console.WriteLine("Enter new last name (leave blank to keep current):");
-        var newLastName = Console.ReadLine();
-        Console.WriteLine("Enter new date of birth (YYYY-MM-DD) (leave blank to keep current):");
-        var newDateOfBirthInput = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(newFirstName)) member.FirstName = newFirstName;
-        if (!string.IsNullOrWhiteSpace(newLastName)) member.LastName = newLastName;
-        if (!string.IsNullOrWhiteSpace(newDateOfBirthInput)) member.DateOfBirth = DateTime.Parse(newDateOfBirthInput);
-        Members[memberId] = member;
-        Console.WriteLine($"Member with ID {memberId} updated successfully.");
+        Console.WriteLine("Enter member ID to edit:");
+        var memberIdInput = Console.ReadLine();
+        if (int.TryParse(memberIdInput, out int memberId) && Members.ContainsKey(memberId))
+        {
+            var member = Members[memberId];
+            Console.WriteLine($"Editing member: {member.FirstName} {member.LastName}");
+            Console.WriteLine("Enter new first name (leave blank to keep current):");
+            var newFirstName = Console.ReadLine();
+            Console.WriteLine("Enter new last name (leave blank to keep current):");
+            var newLastName = Console.ReadLine();
+            Console.WriteLine("Enter new date of birth (YYYY-MM-DD) (leave blank to keep current):");
+            var newDateOfBirthInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newFirstName)) member.FirstName = newFirstName;
+            if (!string.IsNullOrWhiteSpace(newLastName)) member.LastName = newLastName;
+            if (!string.IsNullOrWhiteSpace(newDateOfBirthInput)) member.DateOfBirth = DateTime.Parse(newDateOfBirthInput);
+            Members[memberId] = member;
+            Console.WriteLine($"Member with ID {memberId} updated successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Invalid member ID.");
+        }
+    }
+    else if(choice == 'N' || choice == 'n')
+    {
+        Console.WriteLine("Returning to menu...");
+        return;
     }
     else
     {
-        Console.WriteLine("Invalid member ID.");
+        Console.WriteLine("Wrong input!");
+        return;
     }
 }
 void ViewAllMembers()
@@ -250,76 +287,105 @@ void ReturnBook()
 }
 void DeleteBorrow()
 {
-    Console.WriteLine("Enter member ID:");
-    var memberIdInput = Console.ReadLine();
-    if (int.TryParse(memberIdInput, out int memberId) && Members.ContainsKey(memberId))
+    Console.WriteLine("Are you sure you want to delete this loan? Y/N");
+    char choice = Console.ReadLine()[0];
+    if (choice == 'Y' || choice == 'y')
     {
-        var member = Members[memberId];
-        Console.WriteLine("Enter book ID to delete borrow:");
-        var bookIdInput = Console.ReadLine();
-        if (int.TryParse(bookIdInput, out int bookId))
+        Console.WriteLine("Enter member ID:");
+        var memberIdInput = Console.ReadLine();
+        if (int.TryParse(memberIdInput, out int memberId) && Members.ContainsKey(memberId))
         {
-            var loan = member.Loans.FirstOrDefault(l => l.BookId == bookId);
-            if (loan != default)
+            var member = Members[memberId];
+            Console.WriteLine("Enter book ID to delete borrow:");
+            var bookIdInput = Console.ReadLine();
+            if (int.TryParse(bookIdInput, out int bookId))
             {
-                member.Loans.Remove(loan);
-                Members[memberId] = member;
-                Console.WriteLine($"Borrow record for book '{loan.Title}' deleted successfully.");
+                var loan = member.Loans.FirstOrDefault(l => l.BookId == bookId);
+                if (loan != default)
+                {
+                    member.Loans.Remove(loan);
+                    Members[memberId] = member;
+                    Console.WriteLine($"Borrow record for book '{loan.Title}' deleted successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("This book was not borrowed by the member.");
+                }
             }
             else
             {
-                Console.WriteLine("This book was not borrowed by the member.");
+                Console.WriteLine("Invalid book ID.");
             }
         }
         else
         {
-            Console.WriteLine("Invalid book ID.");
+            Console.WriteLine("Invalid member ID.");
         }
+    }
+    else if(choice == 'N' || choice == 'n')
+    {
+        Console.WriteLine("Returning to menu...");
+        return;
     }
     else
     {
-        Console.WriteLine("Invalid member ID.");
+        Console.WriteLine("Wrong input!");
+        return;
     }
 }
 void EditBorrow()
 {
-    Console.WriteLine("Enter member ID:");
-    var memberIdInput = Console.ReadLine();
-    Console.WriteLine("Enter book ID to edit:\n1-Title\n2-Author\n3-Borrowed Date\n4-Due Date");
-    var bookIdInput = Console.ReadLine();
-    var fieldToEdit = Console.ReadLine();
-    switch (fieldToEdit)
+    Console.WriteLine("Are you sure you want to edit a book? Y/N");
+    char choice = Console.ReadLine()[0];
+    if (choice == 'Y' || choice == 'y')
     {
-        case "1":
-            Console.WriteLine("Enter new title:");
-            var newTitle = Console.ReadLine();
-            bookIdInput = newTitle;
-            break;
-        case "2":
-            Console.WriteLine("Enter new author:");
-            var newAuthor = Console.ReadLine();
-            bookIdInput = newAuthor;
-            break;
-        case "3":
-            Console.WriteLine("Enter new borrowed date (YYYY-MM-DD):");
-            var newBorrowedDateInput = Console.ReadLine();
-            DateTime newBorrowedDate = DateTime.Parse(newBorrowedDateInput);
-            break;
-        case "4":
-            Console.WriteLine("Enter new due date (YYYY-MM-DD):");
-            var newDueDateInput = Console.ReadLine();
-            DateTime newDueDate = DateTime.Parse(newDueDateInput);
-            break;
-        default:
-            Console.WriteLine("Invalid selection.");
-            break;
+        Console.WriteLine("Enter member ID:");
+        var memberIdInput = Console.ReadLine();
+        Console.WriteLine("Enter book ID to edit:\n1-Title\n2-Author\n3-Borrowed Date\n4-Due Date");
+        var bookIdInput = Console.ReadLine();
+        var fieldToEdit = Console.ReadLine();
+        switch (fieldToEdit)
+        {
+            case "1":
+                Console.WriteLine("Enter new title:");
+                var newTitle = Console.ReadLine();
+                bookIdInput = newTitle;
+                break;
+            case "2":
+                Console.WriteLine("Enter new author:");
+                var newAuthor = Console.ReadLine();
+                bookIdInput = newAuthor;
+                break;
+            case "3":
+                Console.WriteLine("Enter new borrowed date (YYYY-MM-DD):");
+                var newBorrowedDateInput = Console.ReadLine();
+                DateTime newBorrowedDate = DateTime.Parse(newBorrowedDateInput);
+                break;
+            case "4":
+                Console.WriteLine("Enter new due date (YYYY-MM-DD):");
+                var newDueDateInput = Console.ReadLine();
+                DateTime newDueDate = DateTime.Parse(newDueDateInput);
+                break;
+            default:
+                Console.WriteLine("Invalid selection.");
+                break;
+        }
+    }
+    else if(choice == 'N' || choice == 'n')
+    {
+        Console.WriteLine("Returning to menu...");
+        return;
+    }
+    else
+    {
+        Console.WriteLine("Wrong input!");
+        return;
     }
 }
 void ViewBorrowedBooks()
 {
     while(true)
     {
-        { }
     Console.WriteLine("1-All borrowed books\n2-Sorted books by loan date\n3-Sorted books by late days\n4-Currently borrowed books\n" +
         "5-Search by title or author\n6-Search by month");
     var choice = Console.ReadLine();
@@ -466,4 +532,62 @@ void SearchByMonth()
     {
         Console.WriteLine("Invalid month.");
     }
+}
+void Statistics()
+{
+    while (true)
+    {
+        Console.WriteLine("1-Member with the biggest late fee\n2-Member with the most loans\n3-The most loaned title\n" +
+            "4-Sum of all late fees\n5-Graph of monthly loans\n0-Return to main menu");
+        var choice = Console.ReadLine();
+        switch (choice)
+        {
+            case "1":
+                Console.WriteLine("Loading the member with the biggest late fee...");
+                MemberWithBiggestFee();
+                break;
+            case "2":
+                Console.WriteLine("Loading the member with the most loans...");
+                MemberWithTheMostLoans();
+                break;
+            case "3":
+                Console.WriteLine("Loading the most loaned title...");
+                MostLoanedTitle();
+                break;
+            case "4":
+                Console.WriteLine("Loading the sum of all members fees...");
+                SumOfAllLateFees();
+                break;
+            case "5":
+                Console.WriteLine("Loading the monthly loans graph...");
+                MonthlyLoansGraph();
+                break;
+            case "0":
+                Console.WriteLine("Returning to menu...");
+                return;
+            default:
+                Console.WriteLine("Wrong input!");
+                break;
+        }
+    }
+}
+void MemberWithBiggestFee()
+{
+
+}
+void MemberWithTheMostLoans()
+{
+
+}
+void MostLoanedTitle()
+{
+
+}
+void SumOfAllLateFees()
+{
+
+}
+void MonthlyLoansGraph()
+{
+
 }
