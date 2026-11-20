@@ -573,21 +573,59 @@ void Statistics()
 }
 void MemberWithBiggestFee()
 {
-
+    if(Members.Count==0)
+    {
+        Console.WriteLine("There are no members here.");
+        return;
+    }
+    var top = Members.Select(m => (ID: m.Key, Member: m.Value,
+    Fee: m.Value.Loans.Sum(l => l.DueDate.HasValue && (DateTime.Now - l.DueDate.Value).Days > 0 ?
+    (DateTime.Now - l.DueDate.Value).Days * LateFeePerDay : 0))).OrderByDescending(x=>x.Fee).First();
+    if(top.Fee == 0)
+    {
+        Console.WriteLine("No member in this library currently has late fees!");
+        return;
+    }
+    Console.WriteLine($"Member with the biggest late fee is: {top.Member.LastName}, {top.Member.FirstName} - {top.Fee:F2}");
 }
 void MemberWithTheMostLoans()
 {
+    if (Members.Count == 0)
+    {
+        Console.WriteLine("There are no members here.");
+        return;
+    }
+    var top = Members.OrderByDescending(m => m.Value.Loans.Count).First();
+    Console.WriteLine($"Member with the most loans is: {top.Value.LastName}, {top.Value.FirstName} - {top.Value.Loans.Count}");
 
 }
 void MostLoanedTitle()
 {
-
+    var top = Members.Values.SelectMany(m => m.Loans).GroupBy(l => l.Title).OrderByDescending(g => g.Count()).FirstOrDefault();
+    if(top==null)
+    {
+        Console.WriteLine("There are no loans in this library yet!");
+        return;
+    }
+    Console.WriteLine($"The most loaned title is: \"{top.Key}\" - loaned {top.Count()} times");
 }
 void SumOfAllLateFees()
 {
-
+    var total = Members.Values.SelectMany(m => m.Loans).Sum(l => l.DueDate.HasValue && (DateTime.Now - l.DueDate.Value).Days
+    > 0 ? (DateTime.Now - l.DueDate.Value).Days * LateFeePerDay : 0);
+    Console.WriteLine($"The sum of all late fees is: {total:F2}");
 }
 void MonthlyLoansGraph()
 {
-
+    var perMonth = Members.Values.SelectMany(m => m.Loans).GroupBy(l => new { l.BorrowedDate.Year, l.BorrowedDate.Month }).
+        OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month);
+    if(!perMonth.Any())
+    {
+        Console.WriteLine("THere are no loans yet in this library!");
+        return;
+    }
+    foreach(var month in perMonth)
+    {
+        Console.WriteLine($"{month.Key.Year}-{month.Key.Month:D2} | {new string('*', month.Count())} ({month.Count()})");
+    }
 }
